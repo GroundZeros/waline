@@ -1,5 +1,4 @@
 const { Console } = require('think-logger3');
-const Mysql = require('think-model-mysql');
 const Mysql2 = require('think-model-mysql2');
 const Postgresql = require('think-model-postgresql');
 
@@ -136,7 +135,7 @@ exports.model = {
   },
 
   mysql: {
-    handle: Mysql,
+    handle: Mysql2,
     dateStrings: true,
     host: MYSQL_HOST || '127.0.0.1',
     port: MYSQL_PORT || '3306',

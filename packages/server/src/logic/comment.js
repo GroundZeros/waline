@@ -181,23 +181,19 @@ module.exports = class extends Base {
    * @apiGroup Comment
    * @apiVersion  0.0.1
    *
-   * @apiParam  {String}  nick post comment user nick name
-   * @apiParam  {String}  mail  post comment user mail address
-   * @apiParam  {String}  link  post comment user link
+   * @apiParam  {String}  userId  post comment userId
    * @apiParam  {String}  comment  post comment text
    * @apiParam  {String}  url  the article url path of comment
    * @apiParam  {String}  ua  browser user agent
    * @apiParam  {String}  pid parent comment id
    * @apiParam  {String}  rid root comment id
-   * @apiParam  {String}  at  parent comment user nick name
+   * @apiParam  {String}  at  parent comment userId
    * @apiParam  {String}  lang  language
    *
    * @apiSuccess  (200) {Number}  errno 0
    * @apiSuccess  (200) {String}  errmsg  return error message if error
    * @apiSuccess  (200) {Object}  data  return comment data
-   * @apiSuccess  (200) {String}  data.nick comment user nick name
-   * @apiSuccess  (200) {String}  data.mail comment user mail md5
-   * @apiSuccess  (200) {String}  data.link comment user link
+   * @apiSuccess  (200) {String}  data.userId comment userid
    * @apiSuccess  (200) {String}  data.objectId comment id
    * @apiSuccess  (200) {String}  data.browser comment user browser
    * @apiSuccess  (200) {String}  data.os comment user os
@@ -206,8 +202,8 @@ module.exports = class extends Base {
    * @apiSuccess  (200) {String}  data.type comment login user type
    */
   async postAction() {
-    const { LOGIN } = process.env;
-    const { userInfo } = this.ctx.state;
+    // const { LOGIN } = process.env;
+    // const { userInfo } = this.ctx.state;
 
     this.rules = {
       url: {
@@ -218,17 +214,23 @@ module.exports = class extends Base {
         string: true,
         required: true,
       },
+      userId: {
+        string: true,
+        required: true,
+      },
     };
 
-    if (!think.isEmpty(userInfo)) {
-      return;
-    }
+    // 始终允许匿名评论，不再检查 LOGIN 环境变量
+    // if (!think.isEmpty(userInfo)) {
+    //   return;
+    // }
+    //
+    // if (LOGIN === 'force') {
+    //   return this.ctx.throw(401);
+    // }
 
-    if (LOGIN === 'force') {
-      return this.ctx.throw(401);
-    }
-
-    return this.useCaptchaCheck();
+    // 可以选择是否保留验证码检查
+    // return this.useCaptchaCheck();
   }
 
   /**

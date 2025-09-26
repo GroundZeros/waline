@@ -95,11 +95,12 @@ module.exports = class extends BaseRest {
   async postAction() {
     think.logger.debug('Post Comment Start!');
 
-    const { comment, link, mail, nick, pid, rid, ua, url, at } = this.post();
+    const { comment, pid, rid, ua, url, at, userId } = this.post();
+    // 如果提供了 userId，则使用它作为 user_id
+    // 如果都没有，则 user_id 为空 (匿名用户)
+    const user_id = userId || null;
+
     const data = {
-      link,
-      mail,
-      nick,
       pid,
       rid,
       ua,
@@ -107,7 +108,7 @@ module.exports = class extends BaseRest {
       comment,
       ip: this.ctx.ip,
       insertedAt: new Date(),
-      user_id: this.ctx.state.userInfo.objectId,
+      user_id,
     };
 
     if (pid && this.ctx.state.deprecated) {
@@ -135,13 +136,21 @@ module.exports = class extends BaseRest {
       think.logger.debug(`Comment IP ${data.ip} check OK!`);
 
       /** Duplicate content detect */
-      const duplicate = await this.modelInstance.select({
+      // 使用 userId 或 IP 进行重复内容检测，而不是邮箱和昵称
+      const duplicateWhere = {
         url,
-        mail: data.mail,
-        nick: data.nick,
-        link: data.link,
         comment: data.comment,
-      });
+      };
+
+      // 如果提供了 userId，则优先使用 userId 进行检测
+      if (data.user_id) {
+        duplicateWhere.user_id = data.user_id;
+      } else {
+        // 否则使用 IP 地址进行检测
+        duplicateWhere.ip = data.ip;
+      }
+
+      const duplicate = await this.modelInstance.select(duplicateWhere);
 
       if (!think.isEmpty(duplicate)) {
         think.logger.debug(
@@ -154,7 +163,7 @@ module.exports = class extends BaseRest {
       think.logger.debug('Comment duplicate check OK!');
 
       /** IP frequency */
-      const { IPQPS = 60 } = process.env;
+      const { IPQPS = 10 } = process.env;
 
       const recent = await this.modelInstance.select({
         ip: this.ctx.ip,
