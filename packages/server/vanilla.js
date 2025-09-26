@@ -1,5 +1,10 @@
 const path = require('node:path');
 
+require('dotenv').config({
+  path: path.join(__dirname, '.env.prod'),
+  quiet: true,
+});
+
 const Application = require('thinkjs');
 
 const instance = new Application({
